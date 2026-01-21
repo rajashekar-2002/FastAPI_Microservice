@@ -1,38 +1,53 @@
-# 🔁 How services interact (VERY IMPORTANT)
-# Step-by-step flow
-
-# 1️⃣ Browser requests / from Service A
-# 2️⃣ Service A calls /items on Service B
-# 3️⃣ Service B returns JSON
-# 4️⃣ Service A renders HTML
-# 5️⃣ Browser sees result
-
-# 📌 Service B never talks to HTML
-# 📌 Service A never owns data
-
-
-
+# FastAPI framework
 from fastapi import FastAPI, Request
+
+# Template engine to render HTML
 from fastapi.templating import Jinja2Templates
+
+# HTTP client for calling other services
 import httpx
 
+# Import schema for validation
+from .schemas import Item
+
+
+# Create FastAPI app instance
 app = FastAPI(title="Service A - Frontend")
 
+# Configure template directory
 templates = Jinja2Templates(directory="service_a/templates")
 
+# URL of Service B (hardcoded for now)
 SERVICE_B_URL = "http://localhost:8001"
+
 
 @app.get("/")
 async def index(request: Request):
-    async with httpx.AsyncClient() as client:
+    """
+    This function:
+    - Handles browser request
+    - Calls Service B
+    - Renders HTML with data
+    """
+
+    # Create async HTTP client
+    async with httpx.AsyncClient(timeout=2.0) as client:
+
+        # Call Service B /items endpoint
         response = await client.get(f"{SERVICE_B_URL}/items")
-        # response: httpx.Response
-        items = response.json()
 
+        # Convert JSON response into Python dict
+        raw_items = response.json()
+
+        # Validate each item using Pydantic schema
+        # This ensures data correctness
+        items = [Item(**item) for item in raw_items]
+
+    # Render HTML template
     return templates.TemplateResponse(
-        "index.html",
-        {"request": request, "items": items}
+        "index.html",  # Template file
+        {
+            "request": request,  # REQUIRED for Jinja2
+            "items": items       # Data passed to HTML
+        }
     )
-
-
-

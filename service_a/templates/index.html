@@ -1,15 +1,21 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Microservice Demo</title>
+    <title>Items List</title>
 </head>
 <body>
-    <h1>Items (from Service B)</h1>
 
-    <ul>
-        {% for item in items %}
-            <li>{{ item.name }}</li>
-        {% endfor %}
-    </ul>
+<h1>Items from Service B</h1>
+
+<ul>
+    <!-- Loop through items sent from backend -->
+    {% for item in items %}
+        <li>
+            <!-- Display item properties -->
+            {{ item.id }} - {{ item.name }}
+        </li>
+    {% endfor %}
+</ul>
+
 </body>
 </html>
